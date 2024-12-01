@@ -111,7 +111,6 @@ const validateTags = async (tags, photoId, Tag) => {
 };
 
 const validateSearchParams = (query) => {
-    console.log(query);
     // Validate tag
     if (!query.tags) {
         return {

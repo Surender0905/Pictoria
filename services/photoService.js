@@ -1,8 +1,8 @@
-const Photo = require("../models/photo");
-const Tag = require("../models/tag");
-const sequelize = require("../config/database");
+const { photo: Photo } = require("../models");
+const { tag: Tag } = require("../models");
+const { sequelize } = require("../models");
 const { Op } = require("sequelize");
-const SearchHistory = require("../models/searchHistory");
+const { searchHistory: SearchHistory } = require("../models");
 
 const savePhoto = async (photoData) => {
     const transaction = await sequelize.transaction();
@@ -73,21 +73,16 @@ const addTagsToPhoto = async (photoId, tags) => {
 const searchPhotosByTag = async (tag, sortOrder = "ASC", userId = null) => {
     try {
         // Find photos form tags table
-        const photosIds = await Tag.findAll({
-            where: { name: tag },
-        });
-
-        //get all tags from photosIds
-        const allTags = photosIds.map((tag) => tag.name);
-        //get ids from photosIds
-        const ids = photosIds.map((photo) => photo.photoId);
-
-        // Find photos by ids
         const photos = await Photo.findAll({
-            where: { id: ids },
+            include: [
+                {
+                    model: Tag,
+                    where: { name: tag }, // Ensure photos are associated with the provided tag
+                    required: true, // Only include photos that have the specified tag
+                },
+            ],
+            order: [["dateSaved", sortOrder]], // Sort by dateSaved in the specified order
         });
-
-        console.log(photos, "photos");
 
         // Log search history if userId is provided
         if (userId) {
@@ -99,14 +94,24 @@ const searchPhotosByTag = async (tag, sortOrder = "ASC", userId = null) => {
         }
 
         // Format the response
-        return photos.map((photo) => ({
-            id: photo.id,
-            imageUrl: photo.imageUrl,
-            description: photo.description || "",
-            altDescription: photo.altDescription || "",
-            dateSaved: photo.dateSaved,
-            tags: allTags,
-        }));
+
+        const formattedPhotos = await Promise.all(
+            photos.map(async (photo) => {
+                // Fetch all associated tags for the photo
+                const allTags = await Tag.findAll({
+                    where: { photoId: photo.id },
+                });
+
+                return {
+                    imageUrl: photo.imageUrl,
+                    description: photo.description,
+                    dateSaved: photo.dateSaved.toISOString(),
+                    tags: allTags.map((tag) => tag.name), // Map all associated tags to an array of names
+                };
+            }),
+        );
+
+        return formattedPhotos;
     } catch (error) {
         console.error("Error searching photos:", error);
         throw error;

@@ -1,6 +1,6 @@
 const { validateUserId } = require("../utils/validations");
 const { getUserSearchHistory } = require("../services/searchHistoryService");
-const User = require("../models/user");
+const { user: User } = require("../models");
 
 const getSearchHistory = async (req, res) => {
     try {

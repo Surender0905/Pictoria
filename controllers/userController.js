@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const { user: User } = require("../models");
 const { doesUserExist } = require("../services/userService");
 const { validateRequestBody } = require("../utils/validations");
 

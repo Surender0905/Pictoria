@@ -1,9 +1,13 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+module.exports = (sequelize, DataTypes) => {
+    const user = sequelize.define("user", {
+        username: DataTypes.STRING,
+        email: DataTypes.STRING,
+    });
 
-const user = sequelize.define("user", {
-    username: DataTypes.STRING,
-    email: DataTypes.STRING,
-});
+    user.associate = (models) => {
+        user.hasMany(models.photo, { foreignKey: "userId" });
+        user.hasMany(models.searchHistory, { foreignKey: "userId" });
+    };
 
-module.exports = user;
+    return user;
+};

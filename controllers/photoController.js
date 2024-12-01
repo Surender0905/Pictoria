@@ -9,7 +9,7 @@ const {
     addTagsToPhoto,
     searchPhotosByTag,
 } = require("../services/photoService");
-const Tag = require("../models/tag");
+const { tag: Tag } = require("../models");
 
 const searchPhotos = async (req, res) => {
     const { query } = req.query;
@@ -107,8 +107,6 @@ const searchPhotosByTagHandler = async (req, res) => {
             sort.toUpperCase(),
             userId,
         );
-
-        console.log(photos, "photos issue");
 
         if (photos.length === 0) {
             return res.status(404).json({

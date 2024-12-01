@@ -1,4 +1,4 @@
-const SearchHistory = require("../models/searchHistory");
+const { searchHistory: SearchHistory } = require("../models");
 
 const getUserSearchHistory = async (userId) => {
     try {

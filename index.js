@@ -2,8 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 
-const sequelize = require("./config/database");
-const user = require("./models/user");
+const { sequelize } = require("./models");
+const { user } = require("./models");
 const { createNewUser } = require("./controllers/userController");
 const {
     searchPhotos,
@@ -15,17 +15,6 @@ const { getSearchHistory } = require("./controllers/searchHistoryController");
 
 ///middleware to parse json
 app.use(express.json());
-
-//connect ot database
-
-sequelize
-    .sync()
-    .then(() => {
-        console.log("Connected to database");
-    })
-    .catch((err) => {
-        console.error("Error connecting to database", err);
-    });
 
 ///end point to check health of server
 app.get("/health", (req, res) => {
@@ -55,6 +44,15 @@ app.get("/api/photos/tag/search", searchPhotosByTagHandler);
 
 app.get("/api/search-history", getSearchHistory);
 
+//connect to database
+sequelize
+    .authenticate()
+    .then(() => {
+        console.log("Connected to the database");
+    })
+    .catch((err) => {
+        console.log("Error: " + err);
+    });
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });
